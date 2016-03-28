@@ -1,0 +1,14 @@
+//- scripts etc
+script(type="text/javascript").
+    var token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJoYXNoZWRfcGFzc3dvcmQiOiJmMTVkZTUzMzlhYjc0NGRiMjViZDkwN2UxMTVlYTViYmUyYWJiZDBkIiwiaWF0IjoxNDU5MTQ4MzA2LCJleHAiOjE0NTk3NTMxMDYsImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoiRnJpZW5kbHlGaXJlIiwic3ViIjoidGVzdEB0ZXN0LmNvbSJ9.fD6tMQAhpPL4FSLk5o3Ydl2S9Dnb3s5fUk5vYEY3Yd0';
+    var socket = io('/geo');
+    socket.on('connect', function() {
+        socket.emit('authenticate', { token: token });
+    });
+    socket.on('unauthorized', function(err) {
+        err = err.data;
+        if (err.type === "UnauthorizedError" || err.code === "invalid_token") {
+            // redirect user to login page perhaps?
+            console.log("User's token has expired");
+        }
+    });
