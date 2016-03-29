@@ -1,4 +1,4 @@
-var config = require('../../config/config.js');
+var config = require('config');
 var redis = require('redis'),
     _ = require('lodash'),
     Promise = require('bluebird');
@@ -16,49 +16,61 @@ function Geo() {
     this.client.on('end', console.log.bind(console, 'Redis connection closed'));
 
     // Bind redis methods
-    ['geoadd', 'geopos', 'georadius', 'georadiusbymember'].forEach(function(method) {
+    ['geoadd', 'geopos', 'geodist', 'georadius', 'georadiusbymember']
+    .forEach(function(method) {
         this['_' + method] = this.client[method + 'Async'].bind(this.client, LOCATION_KEY);
     }, this);
 };
 
 Geo.prototype.update = function(data) {
-    var name = this.getName(data);
-    return this._geoadd(data.lon, data.lat, name).then(function(results) {
-        console.log(results);
+    var locationId = this.getLocationId(data);
+    return this._geoadd(data.lng, data.lat, locationId);
+};
+
+Geo.prototype.get = function(locations) {
+    var locationIds = _.map(arguments, this.getLocationId);
+    return this._geopos(locationIds).then(function(items) {
+        var results = _.map(items, function(item, index) {
+            return {
+                id: locationIds[index],
+                geo: item,
+            };
+        });
         return results;
     });;
 };
 
-Geo.prototype.get = function() {
-    var locationNames = _.map(arguments, this.getName);
-    return this._geopos(locationNames).then(function(results) {
-        console.log(results);
-        return results;
-    });;
+Geo.prototype.distance = function(loc1, loc2) {
+    var args = [loc1, loc2].map(this.getLocationId);
+    return this._geodist(args, 'm');
 };
 
-Geo.prototype.find = function(query) {
+Geo.prototype.near = function(query) {
     _.defaults(query, { radius: 1000, unit: 'm' });
     var arg, method;
     if (query.user) {
-        args = [this.getName(query)];
+        args = [this.getLocationId(query)];
         method = '_georadiusbymember';
     } else {
-        args = [query.lon, query.lat];
+        args = [query.lng, query.lat];
         method = '_georadius';
     }
-    args.push(query.radius, query.unit, 'WITHDIST', 'WITHCOORD');
-    if (query.count) {
-        args.push('COUNT', query.count);
-    }
-    return this[method](args).then(function(results) {
-        console.log(results);
+    args.push(query.radius, query.unit, 'WITHDIST', 'WITHCOORD', 'ASC');
+    args.push('COUNT', query.count || 25);
+    return this[method](args).then(function(items) {
+        var results = _.map(items, function(item) {
+            return {
+                id: item[0],
+                distance: item[1],
+                geo: item[2],
+            };
+        });
         return results;
     });
 };
 
-Geo.prototype.getName = function(data) {
-    return 'user:' + data.user + ':device:' + data.device;
+Geo.prototype.getLocationId = function(data) {
+    return 'user:' + data.user;
 };
 
 module.exports = new Geo();

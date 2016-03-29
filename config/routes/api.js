@@ -25,6 +25,10 @@ module.exports = function(passport) {
     router.route('/users/:id')
         .get(users.show);
 
+    var search = require('search');
+    router.route('/search/players')
+        .get(search.players);
+
     /*
     * Error Handling
     */

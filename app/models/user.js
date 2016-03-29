@@ -13,7 +13,7 @@ var moment = require('moment');
 var config = require('../../config/config.js');
 
 var PUBLIC_FIELDS = 'name username'.split(' ');
-var TOKEN_FIELDS = 'email hashed_password'.split(' ');
+var TOKEN_FIELDS = '_id email hashed_password'.split(' ');
 
 /**
  * User schema
@@ -26,6 +26,7 @@ var UserSchema = new Schema({
     hashed_password: { type: String, default: '' },
     salt: { type: String, default: '' },
     token: { type: String },
+    admin: { type: Boolean, default: false },
 });
 
 /**

@@ -10,10 +10,11 @@ module.exports = function(io, config) {
     io.of('/geo')
     .on('connection', authorize)
     .on('authenticated', function(socket) {
-        console.log(socket.decoded_token);
+        console.log('Authenticated: ' + socket.decoded_token.email);
 
         socket.on('update', function(data) {
             console.log(data);
+            data.user = socket.decoded_token._id;
             geo.update(data).then(function() {
                 socket.broadcast.emit('update', data);
             }, function(err) {
@@ -29,7 +30,7 @@ module.exports = function(io, config) {
     io.of('/attack')
     .on('connection', function(socket) {
         socket.on('fire', function(data) {
-
+            
         });
     });
 };
