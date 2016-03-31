@@ -6,7 +6,12 @@ var config = {
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: -34.397, lng: 150.644},
-        zoom: 8
+        zoom: 7
+    });
+
+    map.addListener('click', function(e) {
+        var latlng = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+        geoio.emit('update', latlng);
     });
 }
 
@@ -41,30 +46,36 @@ var app = (function controller() {
             detectLocation(function(geo) {
                 socket.emit('update', geo);
                 map.panTo(geo);
-                map.setZoom(15);
-                var marker = markers.me = (markers.me || new google.maps.Marker({
-                    map: map,
-                    title: 'My Location',
-                }));
-                marker.setPosition(geo);
+                map.setZoom(18);
+                // var marker = markers.me = (markers.me || new google.maps.Marker({
+                //     map: map,
+                //     title: 'My Location',
+                // }));
+                // marker.setPosition(geo);
             });
         },
         onLocationUpdate: function(data) {
-            var marker = markers[data._id] = (markers[data._id] || new google.maps.Marker({ map: map }));
+            var marker = markers[data.user] = (markers[data.user] || new google.maps.Marker({ map: map }));
             marker.setPosition({ lng: data.lng, lat: data.lat });
+        },
+        removeMarker: function(userId) {
+            if (!markers[userId]) return;
+            markers[userId].setMap(null);
+            delete markers[userId];
         }
     };
 })();
 
-var sio = (function initSocket(controller) {
+var geoio = (function initSocket(controller) {
     var socket = io('/geo')
     .on('connect', function() {
         socket.emit('authenticate', { token: config.auth_token });
     })
     .on('authenticated', function() {
         console.log('authenticated');
-        controller.onAuthenticated(socket);
         socket.on('update', controller.onLocationUpdate);
+        socket.on('outofsight', controller.removeMarker);
+        controller.onAuthenticated(socket);
     })
     .on('unauthorized', function(err) {
         err = err.data;

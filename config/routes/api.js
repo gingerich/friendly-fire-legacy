@@ -8,6 +8,7 @@ module.exports = function(passport) {
         .post(users.create);
 
     router.route('/auth')
+        // Authentication nullifies the previous auth token so a user can only be logged in on a single device
         .post(passport.authenticate('local', { session: false }), users.createToken, users.authenticated);
 
     /*
