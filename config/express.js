@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -27,7 +26,6 @@ var env = process.env.NODE_ENV || 'development';
  */
 
 module.exports = function (app, passport) {
-
   // Compression middleware (should be placed before express.static)
   app.use(compression({
     threshold: 512
@@ -89,7 +87,7 @@ module.exports = function (app, passport) {
     saveUninitialized: true,
     store: new mongoStore({
       url: config.db,
-      collection : 'sessions'
+      collection: 'sessions'
     })
   }));
 
@@ -107,10 +105,10 @@ module.exports = function (app, passport) {
   // if (process.env.NODE_ENV !== 'test') {
   //   app.use(csrf());
 
-  //   // This could be moved to view-helpers :-)
-  //   app.use(function(req, res, next){
-  //     res.locals.csrf_token = req.csrfToken();
-  //     next();
-  //   });
-  // }
+//   // This could be moved to view-helpers :-)
+//   app.use(function(req, res, next){
+//     res.locals.csrf_token = req.csrfToken();
+//     next();
+//   });
+// }
 };

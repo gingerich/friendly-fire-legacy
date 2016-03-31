@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -12,7 +11,6 @@ var mongoose = require('mongoose');
  */
 
 module.exports = function (app, passport) {
-
   // Mount API routes
   var api = require('./routes/api.js')(passport);
   app.use('/api', api);
@@ -23,13 +21,13 @@ module.exports = function (app, passport) {
 
   // adds CSRF support
   if (ENV !== 'test') {
-      views.use(csrf());
+    views.use(csrf());
 
-      // This could be moved to view-helpers :-)
-      views.use(function(req, res, next){
-          res.locals.csrf_token = req.csrfToken();
-          next();
-      });
+    // This could be moved to view-helpers :-)
+    views.use(function (req, res, next) {
+      res.locals.csrf_token = req.csrfToken();
+      next();
+    });
   }
 
   /**

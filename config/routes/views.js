@@ -1,9 +1,9 @@
-module.exports = function(passport) {
-    var router = require('express').Router();
+module.exports = function (passport) {
+  var router = require('express').Router();
 
-    var home = require('home');
-    router.route('/')
-        .get(home.index);
+  var home = require('home');
+  router.route('/')
+    .get(home.index);
 
-    return router;
+  return router;
 };

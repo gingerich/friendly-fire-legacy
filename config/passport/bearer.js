@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -14,14 +13,14 @@ var config = require('config');
  */
 
 module.exports = new JwtBearerStrategy(
-    config.jwtSecret,
-    /* { options }, */
-    function(token, done) {
-        User.findOne({ email: token.sub }).exec()
-        .then(function(user) {
-            if (!user) return done(null, false);
-            done(null, user, { scope: 'all' });
-        })
-        .catch(done);
-    }
+  config.jwtSecret,
+  /* { options }, */
+  function (token, done) {
+    User.findOne({ email: token.sub }).exec()
+      .then(function (user) {
+        if (!user) return done(null, false);
+        done(null, user, { scope: 'all' });
+      })
+      .catch(done);
+  }
 );

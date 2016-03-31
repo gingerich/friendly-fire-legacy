@@ -44,8 +44,10 @@
     "winston": "1.0.1"
   },
   "devDependencies": {
-    "nodemon": "latest",
     "mocha": "latest",
+    "nodemon": "latest",
+    "semistandard": "^7.0.5",
+    "semistandard-format": "^2.1.0",
     "should": "latest",
     "supertest": "latest"
   },

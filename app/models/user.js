@@ -1,4 +1,3 @@
-
 /*!
  * Module dependencies
  */
@@ -20,13 +19,13 @@ var TOKEN_FIELDS = '_id email hashed_password'.split(' ');
  */
 
 var UserSchema = new Schema({
-    name: { type: String, default: '' },
-    email: { type: String, required: true, unique: true },
-    username: { type: String, unique: true, sparse: true },
-    hashed_password: { type: String, default: '' },
-    salt: { type: String, default: '' },
-    token: { type: String },
-    admin: { type: Boolean, default: false },
+  name: { type: String, default: '' },
+  email: { type: String, required: true, unique: true },
+  username: { type: String, unique: true, sparse: true },
+  hashed_password: { type: String, default: '' },
+  salt: { type: String, default: '' },
+  token: { type: String },
+  admin: { type: Boolean, default: false },
 });
 
 /**
@@ -42,49 +41,49 @@ UserSchema.plugin(userPlugin, {});
  * - virtuals
  */
 
- UserSchema.virtual('decoded_token')
-.get(function() {
+UserSchema.virtual('decoded_token')
+  .get(function () {
     var decoded = jwt.decode(this.token);
     return {
-        token: this.token,
-        issued_at: moment.unix(decoded.iat),
-        expires_at: moment.unix(decoded.exp),
-        expires_in: (decoded.exp - decoded.iat) * 1000,  // ms
-        claims: decoded,
+      token: this.token,
+      issued_at: moment.unix(decoded.iat),
+      expires_at: moment.unix(decoded.exp),
+      expires_in: (decoded.exp - decoded.iat) * 1000, // ms
+      claims: decoded,
     };
-});
+  });
 
 /**
  * Methods
  */
 
 UserSchema.method({
-    public: function() {
-        return _.pick(this, PUBLIC_FIELDS);
-    },
+  public: function () {
+    return _.pick(this, PUBLIC_FIELDS);
+  },
 
-    generateToken: function() {
-        var profile = _.pick(this.toJSON(), TOKEN_FIELDS);
-        return this.token = jwt.sign(profile, config.jwtSecret, {
-            expiresIn: '7d',
-            issuer: 'FriendlyFire',
-            subject: this.email,
-            audience: config.root_url,
-        });
-    },
+  generateToken: function () {
+    var profile = _.pick(this.toJSON(), TOKEN_FIELDS);
+    return this.token = jwt.sign(profile, config.jwtSecret, {
+      expiresIn: '7d',
+      issuer: 'FriendlyFire',
+      subject: this.email,
+      audience: config.root_url,
+    });
+  },
 
-    refreshToken: function() {
-        var _this = this;
-        var verify = Promise.promisify(jwt.verify);
-        return verify(this.token, config.jwtSecret, {
-            issuer: 'FriendlyFire',
-            subject: this.email,
-            audience: config.root_url,
-            ignoreExpiration: true,
-        }).then(function(decoded) {
-            return _this.generateToken();
-        });
-    },
+  refreshToken: function () {
+    var _this = this;
+    var verify = Promise.promisify(jwt.verify);
+    return verify(this.token, config.jwtSecret, {
+      issuer: 'FriendlyFire',
+      subject: this.email,
+      audience: config.root_url,
+      ignoreExpiration: true,
+    }).then(function (decoded) {
+      return _this.generateToken();
+    });
+  },
 });
 
 /**

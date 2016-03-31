@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -13,10 +12,10 @@ var User = mongoose.model('User');
  */
 
 module.exports = new LocalStrategy({
-    usernameField: 'email',
-    passwordField: 'password',
-  },
-  function(email, password, done) {
+  usernameField: 'email',
+  passwordField: 'password',
+},
+  function (email, password, done) {
     var options = {
       criteria: { email: email }
     };
