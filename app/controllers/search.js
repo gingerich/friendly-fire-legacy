@@ -1,10 +1,10 @@
 var winston = require('winston'),
   mongoose = require('mongoose'),
   User = mongoose.model('User'),
-  geo = require('../lib/geo');
+  geo = require('geokit');
 
 exports.players = function (req, res) {
-  geo.near(req.query).then(function (data) {
+  geo.store.near(req.query).then(function (data) {
     res.jsonp(data);
   })
     .catch(function (err) {

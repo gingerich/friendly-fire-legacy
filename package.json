@@ -10,8 +10,8 @@
     "node": "0.12.x"
   },
   "scripts": {
-    "start": "NODE_PATH=./config:./app/controllers NODE_ENV=development ./node_modules/.bin/nodemon server.js",
-    "test": "make test"
+    "start": "NODE_PATH=./config:./app/controllers:./app/lib:./app/lib/geo NODE_ENV=development ./node_modules/.bin/nodemon server.js",
+    "test": "semistandard && make test"
   },
   "dependencies": {
     "bluebird": "^3.3.x",

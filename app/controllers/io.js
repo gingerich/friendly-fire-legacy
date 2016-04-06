@@ -1,9 +1,9 @@
-var geo = require('../lib/geo.js');
+var geo = require('geokit');
 
 exports.geo = function (socket) {
   socket.on('update', function (data) {
     console.log(data);
-    geo.update(data);
+    geo.store.update(data);
     socket.broadcast.emit('update', data);
   });
 

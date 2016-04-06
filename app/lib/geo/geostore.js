@@ -1,7 +1,7 @@
 var config = require('config');
-var redis = require('redis'),
-  _ = require('lodash'),
-  Promise = require('bluebird');
+var redis = require('redis');
+var _ = require('lodash');
+var Promise = require('bluebird');
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
@@ -10,9 +10,9 @@ var GEOLOCATION_KEY = APP_PREFIX + 'user.geolocations';
 
 var GEOLOCATION_HISTORY_LENGTH = 99;
 
-function Geo () {
-  if (!(this instanceof Geo)) {
-    return new Geo();
+function GeoStore () {
+  if (!(this instanceof GeoStore)) {
+    return new GeoStore();
   }
   this.client = redis.createClient(config.redis);
   this.client.on('error', console.error.bind(console));
@@ -25,7 +25,7 @@ function Geo () {
     }, this);
 }
 
-Geo.prototype.update = function (data) {
+GeoStore.prototype.update = function (data) {
   var locationId = this.getLocationId(data);
   var key = APP_PREFIX + 'user:' + data.user + ':geolocation.history';
   return this.client.batch()
@@ -34,39 +34,39 @@ Geo.prototype.update = function (data) {
     .lpush(key, JSON.stringify({ lat: data.lat, lng: data.lng }))
     .ltrim(key, 0, GEOLOCATION_HISTORY_LENGTH)
     .execAsync().then(function (result) {
-    var geohashResult = result[1];
-    return geohashResult[0];
-  });
+      var geohashResult = result[1];
+      return geohashResult[0];
+    });
 };
 
-Geo.prototype.get = function (locations) {
+GeoStore.prototype.get = function (locations) {
   var locationIds = _.map(arguments, this.getLocationId);
   return this._geopos(locationIds).then(function (items) {
     var results = _.map(items, function (item, index) {
       return {
         id: locationIds[index],
-        geo: item,
+        geo: item
       };
     });
     return results;
   });
 };
 
-Geo.prototype.distance = function (loc1, loc2) {
+GeoStore.prototype.distance = function (loc1, loc2) {
   var args = [loc1, loc2].map(this.getLocationId);
   return this._geodist(args, 'm');
 };
 
-Geo.prototype.geohash = function (locations) {
+GeoStore.prototype.geohash = function (locations) {
   var args = _.map(arguments, this.getLocationId);
   return this._geohash(args).then(function (items) {
     return items;
   });
 };
 
-Geo.prototype.near = function (query) {
+GeoStore.prototype.near = function (query) {
   _.defaults(query, { radius: 1000, unit: 'm' });
-  var arg, method;
+  var args, method;
   if (query.user) {
     args = [this.getLocationId(query)];
     method = '_georadiusbymember';
@@ -81,46 +81,19 @@ Geo.prototype.near = function (query) {
       return {
         id: item[0],
         distance: item[1],
-        geo: item[2],
+        geo: item[2]
       };
     });
     return results;
   });
 };
 
-Geo.prototype.getLocationId = function (data) {
+GeoStore.prototype.getLocationId = function (data) {
   return 'user:' + data.user;
 };
 
-Geo.prototype.getLocationHistoryKey = function (data) {
+GeoStore.prototype.getLocationHistoryKey = function (data) {
   return 'user:' + data.user + ':geolocation.history';
 };
 
-function toPrecision (geohash, precision) {
-  return geohash.slice(0, precision);
-}
-
-function getNeighbours (geohash) {
-  var Geohash = require('geohash-helper/lib/geohash');
-  var neighbours = {
-    'n': Geohash.calculateAdjacent(geohash, 'top'),
-    'e': Geohash.calculateAdjacent(geohash, 'right'),
-    's': Geohash.calculateAdjacent(geohash, 'bottom'),
-    'w': Geohash.calculateAdjacent(geohash, 'left'),
-  };
-  neighbours.ne = Geohash.calculateAdjacent(neighbours.n, 'right');
-  neighbours.se = Geohash.calculateAdjacent(neighbours.s, 'right');
-  neighbours.sw = Geohash.calculateAdjacent(neighbours.s, 'left');
-  neighbours.nw = Geohash.calculateAdjacent(neighbours.n, 'left');
-  return neighbours;
-}
-
-function getNeighboursList (geohash) {
-  return _.values(getNeighbours(geohash));
-}
-
-module.exports = new Geo();
-module.exports.hash = require('geohash-helper/lib/helper');
-module.exports.hash.toPrecision = toPrecision;
-module.exports.hash.getNeighbours = getNeighbours;
-module.exports.hash.getNeighboursList = getNeighboursList;
+module.exports = GeoStore;
